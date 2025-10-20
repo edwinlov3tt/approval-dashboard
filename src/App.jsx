@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './lib/auth'
 import Login from './pages/login/Login'
 import Dashboard from './pages/dashboard/Dashboard'
+import Ads from './pages/ads/Ads'
 import Campaigns from './pages/campaigns/Campaigns'
 import Calendar from './pages/calendar/Calendar'
 import Profile from './pages/profile/Profile'
@@ -23,6 +24,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ads"
+            element={
+              <ProtectedRoute>
+                <Ads />
               </ProtectedRoute>
             }
           />
