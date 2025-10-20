@@ -1,13 +1,14 @@
 import { Link, useLocation } from 'react-router-dom'
+import Icon from '../ui/Icon'
 
 export default function Sidebar() {
   const location = useLocation()
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: 'Dashboard' },
-    { path: '/campaigns', label: 'Campaigns', icon: 'Campaigns' },
-    { path: '/calendar', label: 'Calendar', icon: 'Calendar' },
-    { path: '/profile', label: 'Profile', icon: 'Profile' },
+    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { path: '/campaigns', label: 'Campaigns', icon: 'campaigns' },
+    { path: '/calendar', label: 'Calendar', icon: 'calendar' },
+    { path: '/profile', label: 'Profile', icon: 'profile' },
   ]
 
   return (
@@ -26,7 +27,9 @@ export default function Sidebar() {
                       : 'text-text-primary hover:bg-canvas'
                   }`}
                 >
-                  <span className="mr-sp-3">{item.icon}</span>
+                  <span className="mr-sp-3">
+                    <Icon name={item.icon} />
+                  </span>
                   {item.label}
                 </Link>
               </li>
