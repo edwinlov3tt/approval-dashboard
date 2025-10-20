@@ -1,10 +1,41 @@
+import { useState, useMemo } from 'react'
 import Layout from '../../components/layout/Layout'
 import Card, { CardHeader } from '../../components/ui/Card'
 import StatusBadge from '../../components/ui/StatusBadge'
 import Button from '../../components/ui/Button'
+import SortableTableHeader from '../../components/ui/SortableTableHeader'
 import { mockDashboardStats, mockRecentActivity } from '../../lib/mockData'
 
 export default function Dashboard() {
+  const [sort, setSort] = useState({ key: null, direction: null })
+
+  const sortedActivity = useMemo(() => {
+    if (!sort.key || !sort.direction) return mockRecentActivity
+
+    return [...mockRecentActivity].sort((a, b) => {
+      let aValue = a[sort.key]
+      let bValue = b[sort.key]
+
+      // Handle date sorting
+      if (sort.key === 'date') {
+        aValue = new Date(aValue).getTime()
+        bValue = new Date(bValue).getTime()
+      }
+
+      // Handle string sorting
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase()
+        bValue = bValue.toLowerCase()
+      }
+
+      if (sort.direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+      }
+    })
+  }, [sort])
+
   return (
     <Layout>
       <h1 className="meta-page-title">Dashboard</h1>
@@ -46,15 +77,35 @@ export default function Dashboard() {
           <table className="meta-table">
             <thead>
               <tr>
-                <th>Ad Name</th>
-                <th>Campaign</th>
-                <th>Status</th>
-                <th>Date</th>
+                <SortableTableHeader
+                  label="Ad Name"
+                  sortKey="ad_name"
+                  currentSort={sort}
+                  onSort={setSort}
+                />
+                <SortableTableHeader
+                  label="Campaign"
+                  sortKey="campaign_name"
+                  currentSort={sort}
+                  onSort={setSort}
+                />
+                <SortableTableHeader
+                  label="Status"
+                  sortKey="status"
+                  currentSort={sort}
+                  onSort={setSort}
+                />
+                <SortableTableHeader
+                  label="Date"
+                  sortKey="date"
+                  currentSort={sort}
+                  onSort={setSort}
+                />
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {mockRecentActivity.map((item) => (
+              {sortedActivity.map((item) => (
                 <tr key={item.id}>
                   <td>{item.ad_name}</td>
                   <td>{item.campaign_name}</td>

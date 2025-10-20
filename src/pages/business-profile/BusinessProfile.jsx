@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Layout from '../../components/layout/Layout'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
+import SortableTableHeader from '../../components/ui/SortableTableHeader'
 import { mockCompanyProfile, mockApprovers } from '../../lib/mockData'
 
 export default function BusinessProfile() {
@@ -10,6 +11,7 @@ export default function BusinessProfile() {
   const [companyInfo, setCompanyInfo] = useState(mockCompanyProfile)
   const [approvers, setApprovers] = useState(mockApprovers)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
+  const [sort, setSort] = useState({ key: null, direction: null })
   const [inviteForm, setInviteForm] = useState({
     first_name: '',
     last_name: '',
@@ -41,6 +43,35 @@ export default function BusinessProfile() {
   const handleRemoveApprover = (id) => {
     setApprovers(approvers.filter((a) => a.id !== id))
   }
+
+  const sortedApprovers = useMemo(() => {
+    if (!sort.key || !sort.direction) return approvers
+
+    return [...approvers].sort((a, b) => {
+      let aValue, bValue
+
+      // Handle special cases
+      if (sort.key === 'name') {
+        aValue = `${a.first_name} ${a.last_name}`.toLowerCase()
+        bValue = `${b.first_name} ${b.last_name}`.toLowerCase()
+      } else {
+        aValue = a[sort.key]
+        bValue = b[sort.key]
+      }
+
+      // Handle string sorting
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase()
+        bValue = bValue.toLowerCase()
+      }
+
+      if (sort.direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+      }
+    })
+  }, [approvers, sort])
 
   return (
     <Layout>
@@ -206,16 +237,31 @@ export default function BusinessProfile() {
               <table className="meta-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Email</th>
+                    <SortableTableHeader
+                      label="Name"
+                      sortKey="name"
+                      currentSort={sort}
+                      onSort={setSort}
+                    />
+                    <SortableTableHeader
+                      label="Email"
+                      sortKey="email"
+                      currentSort={sort}
+                      onSort={setSort}
+                    />
                     <th>Phone</th>
                     <th>Role</th>
-                    <th>Status</th>
+                    <SortableTableHeader
+                      label="Status"
+                      sortKey="status"
+                      currentSort={sort}
+                      onSort={setSort}
+                    />
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {approvers.map((approver) => (
+                  {sortedApprovers.map((approver) => (
                     <tr key={approver.id}>
                       <td>
                         <div className="font-medium">

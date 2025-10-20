@@ -1,16 +1,46 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Layout from '../../components/layout/Layout'
 import Card from '../../components/ui/Card'
 import StatusBadge from '../../components/ui/StatusBadge'
 import Button from '../../components/ui/Button'
+import SortableTableHeader from '../../components/ui/SortableTableHeader'
 import { mockAds } from '../../lib/mockData'
 
 export default function Ads() {
   const [view, setView] = useState('cards')
   const [filter, setFilter] = useState('all')
+  const [sort, setSort] = useState({ key: null, direction: null })
 
-  const filteredAds =
-    filter === 'all' ? mockAds : mockAds.filter((ad) => ad.status === filter)
+  const filteredAds = useMemo(() => {
+    let ads = filter === 'all' ? mockAds : mockAds.filter((ad) => ad.status === filter)
+
+    if (sort.key && sort.direction) {
+      ads = [...ads].sort((a, b) => {
+        let aValue = a[sort.key]
+        let bValue = b[sort.key]
+
+        // Handle date sorting
+        if (sort.key === 'created_at') {
+          aValue = new Date(aValue).getTime()
+          bValue = new Date(bValue).getTime()
+        }
+
+        // Handle string sorting
+        if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase()
+          bValue = bValue.toLowerCase()
+        }
+
+        if (sort.direction === 'asc') {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+        } else {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+        }
+      })
+    }
+
+    return ads
+  }, [filter, sort])
 
   const statusCounts = {
     all: mockAds.length,
@@ -141,12 +171,37 @@ export default function Ads() {
             <table className="meta-table">
               <thead>
                 <tr>
-                  <th>Ad Name</th>
-                  <th>Campaign</th>
-                  <th>Format</th>
+                  <SortableTableHeader
+                    label="Ad Name"
+                    sortKey="name"
+                    currentSort={sort}
+                    onSort={setSort}
+                  />
+                  <SortableTableHeader
+                    label="Campaign"
+                    sortKey="campaign_name"
+                    currentSort={sort}
+                    onSort={setSort}
+                  />
+                  <SortableTableHeader
+                    label="Format"
+                    sortKey="format"
+                    currentSort={sort}
+                    onSort={setSort}
+                  />
                   <th>Dimensions</th>
-                  <th>Status</th>
-                  <th>Created</th>
+                  <SortableTableHeader
+                    label="Status"
+                    sortKey="status"
+                    currentSort={sort}
+                    onSort={setSort}
+                  />
+                  <SortableTableHeader
+                    label="Created"
+                    sortKey="created_at"
+                    currentSort={sort}
+                    onSort={setSort}
+                  />
                   <th>Actions</th>
                 </tr>
               </thead>
