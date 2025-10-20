@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Approval Dashboard</title>
+    <style>
+        /* Design Tokens */
+        :root {
+            --brand: #1877F2;
+            --brand-hover: #166FE5;
+            --bg-canvas: #F0F2F5;
+            --bg-surface: #FFFFFF;
+            --border: #DADDE1;
+            --divider: #E4E6EB;
+            
+            --text-primary: #1C1E21;
+            --text-secondary: #65676B;
+            --text-muted: #8A8D91;
+            
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #E41E3F;
+            --info: #2196F3;
+            
+            --sp-2: 8px;
+            --sp-3: 12px;
+            --sp-4: 16px;
+            --sp-5: 20px;
+            --sp-6: 24px;
+            
+            --r-card: 12px;
+            --r-md: 8px;
+            --r-pill: 9999px;
+            
+            --sh-1: 0 2px 4px rgba(0,0,0,0.1);
+            --sh-2: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .dashboard-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-nav {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 var(--sp-4);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--brand);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-3);
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--brand);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: var(--sp-4);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: var(--sp-2);
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: var(--sp-3) var(--sp-4);
+            text-decoration: none;
+            color: var(--text-primary);
+            border-radius: var(--r-md);
+            transition: background-color 0.15s;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--bg-canvas);
+        }
+
+        .sidebar-nav a.active {
+            background: var(--brand);
+            color: white;
+        }
+
+        .sidebar-nav .icon {
+            margin-right: var(--sp-3);
+            font-size: 16px;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: var(--sp-6);
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-surface);
+            border-radius: var(--r-card);
+            border: 1px solid var(--border);
+            box-shadow: var(--sh-1);
+        }
+
+        .card-header {
+            padding: var(--sp-4) var(--sp-5);
+            border-bottom: 1px solid var(--divider);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: var(--sp-5);
+        }
+
+        /* Typography */
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: var(--sp-4);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: var(--sp-4);
+        }
+
+        .body-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: var(--sp-2) var(--sp-4);
+            border-radius: var(--r-md);
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--sp-2);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-canvas);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--divider);
+        }
+
+        .btn-small {
+            padding: var(--sp-2) var(--sp-3);
+            font-size: 12px;
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 2px var(--sp-2);
+            border-radius: var(--r-pill);
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-waiting {
+            background: #FFF3CD;
+            color: #664D03;
+            border: 1px solid #FFECB5;
+        }
+
+        .badge-approved {
+            background: #D1E7DD;
+            color: #0F5132;
+            border: 1px solid #BADBCC;
+        }
+
+        .badge-denied {
+            background: #F8D7DA;
+            color: #721C24;
+            border: 1px solid #F1AEB5;
+        }
+
+        .badge-in-progress {
+            background: #CCE5FF;
+            color: #003D82;
+            border: 1px solid #B3D7FF;
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: var(--sp-3) var(--sp-4);
+            border-bottom: 2px solid var(--divider);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: var(--sp-3) var(--sp-4);
+            border-bottom: 1px solid var(--divider);
+            vertical-align: middle;
+        }
+
+        .table tr:hover {
+            background: var(--bg-canvas);
+        }
+
+        /* Progress Bar */
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-canvas);
+            border-radius: var(--r-pill);
+            overflow: hidden;
+            margin: var(--sp-2) 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.3s ease;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: var(--sp-2);
+            margin-bottom: var(--sp-4);
+            border-bottom: 1px solid var(--divider);
+        }
+
+        .filter-tab {
+            padding: var(--sp-3) var(--sp-4);
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .filter-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .filter-tab.active {
+            color: var(--brand);
+            border-bottom-color: var(--brand);
+        }
+
+        .tab-count {
+            background: var(--bg-canvas);
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: var(--r-pill);
+            font-size: 11px;
+            margin-left: var(--sp-2);
+        }
+
+        .filter-tab.active .tab-count {
+            background: var(--brand);
+            color: white;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--sp-4);
+            margin-bottom: var(--sp-6);
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-card);
+            padding: var(--sp-4);
+            box-shadow: var(--sh-1);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: var(--sp-2);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.15s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-surface);
+            border-radius: var(--r-card);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--sh-2);
+            transform: scale(0.9);
+            transition: transform 0.15s;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: var(--sp-4) var(--sp-5);
+            border-bottom: 1px solid var(--divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-canvas);
+        }
+
+        .modal-body {
+            padding: var(--sp-5);
+        }
+
+        .modal-footer {
+            padding: var(--sp-4) var(--sp-5);
+            border-top: 1px solid var(--divider);
+            display: flex;
+            gap: var(--sp-3);
+            justify-content: flex-end;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: var(--sp-4);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: var(--sp-2);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--sp-3);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            font-size: 14px;
+            transition: border-color 0.15s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--brand);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--sp-4);
+            margin-top: var(--sp-4);
+        }
+
+        .kanban-column {
+            background: var(--bg-canvas);
+            border-radius: var(--r-card);
+            padding: var(--sp-3);
+            min-height: 400px;
+        }
+
+        .kanban-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--sp-3);
+            padding: var(--sp-2);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .kanban-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            padding: var(--sp-3);
+            margin-bottom: var(--sp-3);
+            cursor: grab;
+            transition: all 0.15s;
+            box-shadow: var(--sh-1);
+        }
+
+        .kanban-card:hover {
+            box-shadow: var(--sh-2);
+            transform: translateY(-1px);
+        }
+
+        .kanban-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .kanban-card-title {
+            font-weight: 500;
+            margin-bottom: var(--sp-2);
+        }
+
+        .kanban-card-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            gap: var(--sp-2);
+            margin-bottom: var(--sp-4);
+        }
+
+        .view-toggle button {
+            padding: var(--sp-2) var(--sp-3);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            border-radius: var(--r-md);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .view-toggle button.active {
+            background: var(--brand);
+            color: white;
+            border-color: var(--brand);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Calendar styles */
+        .calendar-container {
+            background: var(--bg-surface);
+            border-radius: var(--r-card);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--sp-4);
+            border-bottom: 1px solid var(--divider);
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-3);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .calendar-header-cell {
+            padding: var(--sp-3);
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--divider);
+        }
+
+        .calendar-cell {
+            min-height: 100px;
+            border-bottom: 1px solid var(--divider);
+            border-right: 1px solid var(--divider);
+            padding: var(--sp-2);
+        }
+
+        .calendar-cell:nth-child(7n) {
+            border-right: none;
+        }
+
+        .calendar-date {
+            font-size: 12px;
+            margin-bottom: var(--sp-2);
+            color: var(--text-muted);
+        }
+
+        .calendar-event {
+            background: var(--success);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-bottom: 2px;
+            cursor: pointer;
+        }
+
+        .calendar-event.waiting { background: var(--warning); }
+        .calendar-event.denied { background: var(--danger); }
+        .calendar-event.in-progress { background: var(--info); }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-content">
+                <div class="logo">Client Approval Dashboard</div>
+                <div class="user-menu">
+                    <span class="body-text">John Smith</span>
+                    <div class="avatar">JS</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav>
+                    <ul class="sidebar-nav">
+                        <li><a href="#" class="active" onclick="showPage('dashboard')"><span class="icon">📊</span> Dashboard</a></li>
+                        <li><a href="#" onclick="showPage('campaigns')"><span class="icon">📁</span> Campaigns</a></li>
+                        <li><a href="#" onclick="showPage('calendar')"><span class="icon">📅</span> Calendar</a></li>
+                        <li><a href="#" onclick="showPage('profile')"><span class="icon">👤</span> Profile</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="content-wrapper">
+                    <!-- Dashboard Page -->
+                    <div id="dashboard-page" class="page-content">
+                        <h1 class="page-title">Dashboard</h1>
+                        
+                        <!-- Stats Cards -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Total Campaigns</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Active Campaigns</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">23</div>
+                                <div class="stat-label">Pending Approvals</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">45</div>
+                                <div class="stat-label">Approved This Month</div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="section-title">Recent Activity</h2>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ad Name</th>
+                                            <th>Campaign</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Summer Sale Banner</td>
+                                            <td>Q3 Campaign</td>
+                                            <td><span class="badge badge-waiting">⏳ Waiting</span></td>
+                                            <td>Oct 19, 2025</td>
+                                            <td><button class="btn btn-small btn-primary">Review</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Product Launch Video</td>
+                                            <td>Holiday Sales</td>
+                                            <td><span class="badge badge-approved">✓ Approved</span></td>
+                                            <td>Oct 18, 2025</td>
+                                            <td><button class="btn btn-small btn-secondary">View</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Social Media Post</td>
+                                            <td>Brand Awareness</td>
+                                            <td><span class="badge badge-denied">✗ Denied</span></td>
+                                            <td>Oct 17, 2025</td>
+                                            <td><button class="btn btn-small btn-secondary">Revise</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campaigns Page -->
+                    <div id="campaigns-page" class="page-content" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+                            <h1 class="page-title">Campaigns</h1>
+                            <button class="btn btn-primary" onclick="openModal('create-campaign-modal')">+ New Campaign</button>
+                        </div>
+
+                        <!-- View Toggle -->
+                        <div class="view-toggle">
+                            <button class="active" onclick="switchView('table')">Table View</button>
+                            <button onclick="switchView('kanban')">Kanban View</button>
+                        </div>
+
+                        <!-- Filter Tabs -->
+                        <div class="filter-tabs">
+                            <button class="filter-tab active">All <span class="tab-count">12</span></button>
+                            <button class="filter-tab">Waiting <span class="tab-count">4</span></button>
+                            <button class="filter-tab">In Progress <span class="tab-count">5</span></button>
+                            <button class="filter-tab">Approved <span class="tab-count">2</span></button>
+                            <button class="filter-tab">Denied <span class="tab-count">1</span></button>
+                        </div>
+
+                        <!-- Table View -->
+                        <div id="table-view" class="card">
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Campaign Name</th>
+                                            <th>Status</th>
+                                            <th>Progress</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Summer Sale 2025</strong></td>
+                                            <td><span class="badge badge-in-progress">◐ In Progress</span></td>
+                                            <td>
+                                                <div>6/10 ads approved</div>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 60%"></div>
+                                                </div>
+                                            </td>
+                                            <td>Jun 1, 2025</td>
+                                            <td>Aug 31, 2025</td>
+                                            <td>
+                                                <button class="btn btn-small btn-secondary" onclick="openModal('campaign-detail-modal')">View</button>
+                                                <button class="btn btn-small btn-secondary">Edit</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Holiday Campaign</strong></td>
+                                            <td><span class="badge badge-waiting">⏳ Waiting</span></td>
+                                            <td>
+                                                <div>0/5 ads approved</div>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 0%"></div>
+                                                </div>
+                                            </td>
+                                            <td>Nov 1, 2025</td>
+                                            <td>Dec 31, 2025</td>
+                                            <td>
+                                                <button class="btn btn-small btn-secondary">View</button>
+                                                <button class="btn btn-small btn-secondary">Edit</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Brand Awareness</strong></td>
+                                            <td><span class="badge badge-approved">✓ Approved</span></td>
+                                            <td>
+                                                <div>8/8 ads approved</div>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 100%"></div>
+                                                </div>
+                                            </td>
+                                            <td>Sep 1, 2025</td>
+                                            <td>Oct 31, 2025</td>
+                                            <td>
+                                                <button class="btn btn-small btn-secondary">View</button>
+                                                <button class="btn btn-small btn-secondary">Edit</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Kanban View -->
+                        <div id="kanban-view" class="kanban-board" style="display: none;">
+                            <div class="kanban-column">
+                                <div class="kanban-header">
+                                    <span>Waiting</span>
+                                    <span class="badge badge-waiting">4</span>
+                                </div>
+                                <div class="kanban-card" draggable="true">
+                                    <div class="kanban-card-title">Holiday Campaign</div>
+                                    <div class="kanban-card-meta">
+                                        <span>0/5 approved</span>
+                                        <span>Nov 1 - Dec 31</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card" draggable="true">
+                                    <div class="kanban-card-title">Spring Launch</div>
+                                    <div class="kanban-card-meta">
+                                        <span>0/3 approved</span>
+                                        <span>Mar 1 - May 31</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="kanban-column">
+                                <div class="kanban-header">
+                                    <span>In Progress</span>
+                                    <span class="badge badge-in-progress">5</span>
+                                </div>
+                                <div class="kanban-card" draggable="true">
+                                    <div class="kanban-card-title">Summer Sale 2025</div>
+                                    <div class="kanban-card-meta">
+                                        <span>6/10 approved</span>
+                                        <span>Jun 1 - Aug 31</span>
+                                    </div>
+                                </div>
+                                <div class="kanban-card" draggable="true">
+                                    <div class="kanban-card-title">Back to School</div>
+                                    <div class="kanban-card-meta">
+                                        <span>3/7 approved</span>
+                                        <span>Aug 1 - Sep 15</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="kanban-column">
+                                <div class="kanban-header">
+                                    <span>Approved</span>
+                                    <span class="badge badge-approved">2</span>
+                                </div>
+                                <div class="kanban-card" draggable="true">
+                                    <div class="kanban-card-title">Brand Awareness</div>
+                                    <div class="kanban-card-meta">
+                                        <span>8/8 approved</span>
+                                        <span>Sep 1 - Oct 31</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="kanban-column">
+                                <div class="kanban-header">
+                                    <span>Denied</span>
+                                    <span class="badge badge-denied">1</span>
+                                </div>
+                                <div class="kanban-card" draggable="true">
+                                    <div class="kanban-card-title">Product Recall</div>
+                                    <div class="kanban-card-meta">
+                                        <span>0/2 approved</span>
+                                        <span>Aug 15 - Sep 30</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Page -->
+                    <div id="calendar-page" class="page-content" style="display: none;">
+                        <h1 class="page-title">Calendar View</h1>
+                        
+                        <div class="calendar-container">
+                            <div class="calendar-header">
+                                <h2>October 2025</h2>
+                                <div class="calendar-nav">
+                                    <button class="btn btn-secondary">← Previous</button>
+                                    <button class="btn btn-secondary">Today</button>
+                                    <button class="btn btn-secondary">Next →</button>
+                                </div>
+                            </div>
+                            
+                            <div class="calendar-grid">
+                                <div class="calendar-header-cell">Sun</div>
+                                <div class="calendar-header-cell">Mon</div>
+                                <div class="calendar-header-cell">Tue</div>
+                                <div class="calendar-header-cell">Wed</div>
+                                <div class="calendar-header-cell">Thu</div>
+                                <div class="calendar-header-cell">Fri</div>
+                                <div class="calendar-header-cell">Sat</div>
+                                
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">1</div>
+                                    <div class="calendar-event approved">Campaign Launch</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">2</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">3</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">4</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">5</div>
+                                    <div class="calendar-event waiting">Review Due</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">6</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">7</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">8</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">9</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">10</div>
+                                    <div class="calendar-event in-progress">Ad Review</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">11</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">12</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">13</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">14</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">15</div>
+                                    <div class="calendar-event approved">Campaign End</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">16</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">17</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">18</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">19</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">20</div>
+                                    <div class="calendar-event waiting">Final Review</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">21</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">22</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">23</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">24</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">25</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">26</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">27</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">28</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">29</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">30</div>
+                                </div>
+                                <div class="calendar-cell">
+                                    <div class="calendar-date">31</div>
+                                    <div class="calendar-event denied">Campaign End</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Page -->
+                    <div id="profile-page" class="page-content" style="display: none;">
+                        <h1 class="page-title">Profile Settings</h1>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label class="form-label">Profile Photo</label>
+                                    <div style="display: flex; align-items: center; gap: var(--sp-3);">
+                                        <div class="avatar" style="width: 64px; height: 64px; font-size: 24px;">JS</div>
+                                        <button class="btn btn-secondary">Upload Photo</button>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4);">
+                                    <div class="form-group">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-input" value="John" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-input" value="Smith" />
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" value="john@company.com" readonly />
+                                    <div class="body-text" style="margin-top: var(--sp-2); color: var(--success);">✓ Verified</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-input" value="(555) 123-4567" />
+                                </div>
+                                
+                                <hr style="margin: var(--sp-5) 0; border: none; border-top: 1px solid var(--divider);" />
+                                
+                                <div class="form-group">
+                                    <label class="form-label">🏖️ Vacation Mode</label>
+                                    <div style="padding: var(--sp-3); background: var(--bg-canvas); border-radius: var(--r-md);">
+                                        <label style="display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3);">
+                                            <input type="checkbox" />
+                                            <span>I'm going on vacation</span>
+                                        </label>
+                                        
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-bottom: var(--sp-3);">
+                                            <div>
+                                                <label class="form-label" style="font-size: 12px;">Start Date</label>
+                                                <input type="date" class="form-input" />
+                                            </div>
+                                            <div>
+                                                <label class="form-label" style="font-size: 12px;">End Date</label>
+                                                <input type="date" class="form-input" />
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" style="font-size: 12px;">Auto-reply message</label>
+                                            <textarea class="form-input form-textarea" placeholder="I'm out of office until..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr style="margin: var(--sp-5) 0; border: none; border-top: 1px solid var(--divider);" />
+                                
+                                <div class="section-title">🔐 Change Password</div>
+                                <div class="form-group">
+                                    <label class="form-label">Current Password</label>
+                                    <input type="password" class="form-input" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">New Password</label>
+                                    <input type="password" class="form-input" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-input" />
+                                </div>
+                                
+                                <button class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Create Campaign Modal -->
+    <div id="create-campaign-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Campaign</h2>
+                <button class="modal-close" onclick="closeModal('create-campaign-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Campaign Name</label>
+                    <input type="text" class="form-input" placeholder="Enter campaign name..." />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input form-textarea" placeholder="Campaign description..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3);">
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-input" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('create-campaign-modal')">Cancel</button>
+                <button class="btn btn-primary">Create Campaign</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Detail Modal -->
+    <div id="campaign-detail-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Summer Sale 2025</h2>
+                <button class="modal-close" onclick="closeModal('campaign-detail-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+                    <div>
+                        <span class="badge badge-in-progress">◐ In Progress</span>
+                        <div class="body-text" style="margin-top: var(--sp-2);">Jun 1 - Aug 31, 2025 (45 days remaining)</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div>6/10 ads approved</div>
+                        <div class="progress" style="width: 200px;">
+                            <div class="progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="border-bottom: 1px solid var(--divider); margin-bottom: var(--sp-4);">
+                    <div style="display: flex; gap: var(--sp-4);">
+                        <button class="filter-tab active">Ads</button>
+                        <button class="filter-tab">Approvers</button>
+                        <button class="filter-tab">Activity</button>
+                    </div>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ad Name</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Summer Sale Banner</td>
+                            <td><span class="badge badge-approved">✓ Approved</span></td>
+                            <td>Jun 1, 2025</td>
+                            <td><button class="btn btn-small btn-secondary">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>Product Carousel</td>
+                            <td><span class="badge badge-waiting">⏳ Waiting</span></td>
+                            <td>Jun 2, 2025</td>
+                            <td><button class="btn btn-small btn-primary">Approve</button></td>
+                        </tr>
+                        <tr>
+                            <td>Video Ad</td>
+                            <td><span class="badge badge-denied">✗ Denied</span></td>
+                            <td>Jun 3, 2025</td>
+                            <td><button class="btn btn-small btn-secondary">Revise</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('campaign-detail-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => page.style.display = 'none');
+            
+            // Show selected page
+            document.getElementById(pageId + '-page').style.display = 'block';
+            
+            // Update active nav item
+            const navItems = document.querySelectorAll('.sidebar-nav a');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+        }
+
+        // View switching
+        function switchView(viewType) {
+            const tableView = document.getElementById('table-view');
+            const kanbanView = document.getElementById('kanban-view');
+            const buttons = document.querySelectorAll('.view-toggle button');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (viewType === 'table') {
+                tableView.style.display = 'block';
+                kanbanView.style.display = 'none';
+            } else {
+                tableView.style.display = 'none';
+                kanbanView.style.display = 'grid';
+            }
+        }
+
+        // Filter tabs
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+
+        // Drag and drop for Kanban
+        document.addEventListener('DOMContentLoaded', function() {
+            const kanbanCards = document.querySelectorAll('.kanban-card');
+            const kanbanColumns = document.querySelectorAll('.kanban-column');
+            
+            let draggedCard = null;
+            
+            kanbanCards.forEach(card => {
+                card.addEventListener('dragstart', function() {
+                    draggedCard = this;
+                    this.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                    draggedCard = null;
+                });
+            });
+            
+            kanbanColumns.forEach(column => {
+                column.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+                
+                column.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (draggedCard) {
+                        this.appendChild(draggedCard);
+                        
+                        // Update status based on column
+                        const badge = draggedCard.querySelector('.badge');
+                        if (this.querySelector('.kanban-header').textContent.includes('Waiting')) {
+                            // Update to waiting status
+                        } else if (this.querySelector('.kanban-header').textContent.includes('Progress')) {
+                            // Update to in progress status
+                        } else if (this.querySelector('.kanban-header').textContent.includes('Approved')) {
+                            // Update to approved status
+                        } else if (this.querySelector('.kanban-header').textContent.includes('Denied')) {
+                            // Update to denied status
+                        }
+                    }
+                });
+            });
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        // Simulate notifications
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 16px;
+                background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: var(--sh-2);
+                z-index: 1001;
+                font-size: 14px;
+                font-weight: 500;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Simulate approval actions
+        function approveAd(adId) {
+            showNotification('Ad approved successfully!');
+        }
+
+        function denyAd(adId) {
+            showNotification('Ad denied', 'error');
+        }
+
+        // Add some interactivity to buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const approveButtons = document.querySelectorAll('.btn-primary');
+            approveButtons.forEach(btn => {
+                if (btn.textContent.includes('Approve')) {
+                    btn.addEventListener('click', () => approveAd(Math.random()));
+                }
+            });
+        });
+    </script>
+</body>
+</html>
