@@ -14,8 +14,8 @@ export default function Sidebar() {
   ]
 
   return (
-    <aside className="w-60 bg-surface border-r border-border min-h-[calc(100vh-56px)] flex flex-col">
-      <nav className="p-sp-4 flex-1">
+    <aside className="w-60 bg-surface border-r border-border h-[calc(100vh-56px)] sticky top-14 flex flex-col">
+      <nav className="p-sp-4 flex-1 overflow-y-auto">
         <ul className="space-y-sp-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
@@ -40,8 +40,8 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Business Profile Section */}
-      <div className="border-t border-divider p-sp-4">
+      {/* Business Profile Section - Always at bottom */}
+      <div className="border-t border-divider p-sp-4 flex-shrink-0">
         <Link
           to="/business-profile"
           className={`flex items-center p-sp-3 rounded-md transition-colors hover:bg-canvas ${
