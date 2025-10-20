@@ -6,6 +6,7 @@ import Ads from './pages/ads/Ads'
 import Campaigns from './pages/campaigns/Campaigns'
 import Calendar from './pages/calendar/Calendar'
 import Profile from './pages/profile/Profile'
+import BusinessProfile from './pages/business-profile/BusinessProfile'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -56,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/business-profile"
+            element={
+              <ProtectedRoute>
+                <BusinessProfile />
               </ProtectedRoute>
             }
           />

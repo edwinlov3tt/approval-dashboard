@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import Icon from '../ui/Icon'
+import { mockCompanyProfile } from '../../lib/mockData'
 
 export default function Sidebar() {
   const location = useLocation()
@@ -13,8 +14,8 @@ export default function Sidebar() {
   ]
 
   return (
-    <aside className="w-60 bg-surface border-r border-border min-h-[calc(100vh-56px)]">
-      <nav className="p-sp-4">
+    <aside className="w-60 bg-surface border-r border-border min-h-[calc(100vh-56px)] flex flex-col">
+      <nav className="p-sp-4 flex-1">
         <ul className="space-y-sp-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
@@ -38,6 +39,26 @@ export default function Sidebar() {
           })}
         </ul>
       </nav>
+
+      {/* Business Profile Section */}
+      <div className="border-t border-divider p-sp-4">
+        <Link
+          to="/business-profile"
+          className={`flex items-center p-sp-3 rounded-md transition-colors hover:bg-canvas ${
+            location.pathname === '/business-profile' ? 'bg-canvas' : ''
+          }`}
+        >
+          <div className="w-10 h-10 rounded-md bg-brand flex items-center justify-center text-white font-semibold text-16 mr-sp-3 flex-shrink-0">
+            {mockCompanyProfile.company_name.charAt(0)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-14 font-medium text-text-primary truncate">
+              {mockCompanyProfile.company_name.split(',')[0]}
+            </div>
+            <div className="text-12 text-text-muted">Business Profile</div>
+          </div>
+        </Link>
+      </div>
     </aside>
   )
 }

@@ -336,3 +336,64 @@ export const mockUserProfile = {
   profile_photo_url: null,
   is_on_vacation: false,
 }
+
+// Mock Company/Business Profile
+export const mockCompanyProfile = {
+  id: 1,
+  company_name: "Scott's RV Truck & Auto Repair, Inc.",
+  logo_url: null,
+  website: 'https://scottsstruckandauto.com',
+  facebook_page: 'scottsrvtruck',
+  facebook_page_id: '100054318528604',
+  instagram_account: '@scottsrvtruck',
+  category: 'Auto Repair & Service',
+  company_overview: "Whether it's your everyday commuting car, heavy duty truck or your RV, we have the training, latest equipment and experience to be your trusted repair shop. Stop in and see us!",
+}
+
+// Mock Approvers
+export const mockApprovers = [
+  {
+    id: 1,
+    first_name: 'John',
+    last_name: 'Smith',
+    email: 'john.smith@scottsrvtruck.com',
+    phone: '(555) 123-4567',
+    is_decision_maker: true,
+    status: 'active',
+    invited_at: '2025-01-15T10:00:00Z',
+    accepted_at: '2025-01-15T11:30:00Z',
+  },
+  {
+    id: 2,
+    first_name: 'Sarah',
+    last_name: 'Johnson',
+    email: 'sarah.johnson@scottsrvtruck.com',
+    phone: '(555) 234-5678',
+    is_decision_maker: false,
+    status: 'active',
+    invited_at: '2025-01-20T09:00:00Z',
+    accepted_at: '2025-01-20T14:20:00Z',
+  },
+  {
+    id: 3,
+    first_name: 'Michael',
+    last_name: 'Davis',
+    email: 'michael.davis@scottsrvtruck.com',
+    phone: '(555) 345-6789',
+    is_decision_maker: false,
+    status: 'pending',
+    invited_at: '2025-02-01T08:00:00Z',
+    accepted_at: null,
+  },
+  {
+    id: 4,
+    first_name: 'Emily',
+    last_name: 'Rodriguez',
+    email: 'emily.rodriguez@scottsrvtruck.com',
+    phone: '(555) 456-7890',
+    is_decision_maker: true,
+    status: 'active',
+    invited_at: '2025-02-10T10:30:00Z',
+    accepted_at: '2025-02-10T15:45:00Z',
+  },
+]
