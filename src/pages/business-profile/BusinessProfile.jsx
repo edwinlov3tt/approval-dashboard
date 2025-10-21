@@ -158,16 +158,31 @@ export default function BusinessProfile() {
             {/* Social Media */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-sp-4">
               <div className="meta-form-group">
-                <label className="meta-form-label">Facebook Page Username</label>
-                <input
-                  type="text"
-                  className="meta-input"
-                  placeholder="username"
-                  value={companyInfo.facebook_page}
-                  onChange={(e) =>
-                    setCompanyInfo({ ...companyInfo, facebook_page: e.target.value })
-                  }
-                />
+                <label className="meta-form-label">Facebook Page Link</label>
+                <div className="flex gap-sp-2">
+                  <input
+                    type="url"
+                    className="meta-input"
+                    placeholder="https://facebook.com/yourpage"
+                    value={companyInfo.facebook_page}
+                    onChange={(e) =>
+                      setCompanyInfo({ ...companyInfo, facebook_page: e.target.value })
+                    }
+                  />
+                  {companyInfo.facebook_page && (
+                    <a
+                      href={companyInfo.facebook_page}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="meta-button-secondary flex items-center justify-center px-sp-3 flex-shrink-0"
+                      title="Open Facebook page"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
               </div>
               <div className="meta-form-group">
                 <label className="meta-form-label">Facebook Page ID</label>
@@ -186,19 +201,34 @@ export default function BusinessProfile() {
             </div>
 
             <div className="meta-form-group">
-              <label className="meta-form-label">Instagram Account</label>
-              <input
-                type="text"
-                className="meta-input"
-                placeholder="@username"
-                value={companyInfo.instagram_account}
-                onChange={(e) =>
-                  setCompanyInfo({
-                    ...companyInfo,
-                    instagram_account: e.target.value,
-                  })
-                }
-              />
+              <label className="meta-form-label">Instagram Page Link</label>
+              <div className="flex gap-sp-2">
+                <input
+                  type="url"
+                  className="meta-input"
+                  placeholder="https://instagram.com/yourpage"
+                  value={companyInfo.instagram_account}
+                  onChange={(e) =>
+                    setCompanyInfo({
+                      ...companyInfo,
+                      instagram_account: e.target.value,
+                    })
+                  }
+                />
+                {companyInfo.instagram_account && (
+                  <a
+                    href={companyInfo.instagram_account}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="meta-button-secondary flex items-center justify-center px-sp-3 flex-shrink-0"
+                    title="Open Instagram page"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Company Overview */}

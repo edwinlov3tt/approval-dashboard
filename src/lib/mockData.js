@@ -343,9 +343,9 @@ export const mockCompanyProfile = {
   company_name: "Scott's RV Truck & Auto Repair, Inc.",
   logo_url: null,
   website: 'https://scottsstruckandauto.com',
-  facebook_page: 'scottsrvtruck',
+  facebook_page: 'https://facebook.com/scottsrvtruck',
   facebook_page_id: '100054318528604',
-  instagram_account: '@scottsrvtruck',
+  instagram_account: 'https://instagram.com/scottsrvtruck',
   category: 'Auto Repair & Service',
   company_overview: "Whether it's your everyday commuting car, heavy duty truck or your RV, we have the training, latest equipment and experience to be your trusted repair shop. Stop in and see us!",
 }
