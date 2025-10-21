@@ -6,20 +6,25 @@ import Card from '../../components/ui/Card'
 
 export default function Login() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
 
-    if (login(email, password)) {
+    const result = await login(email)
+
+    if (result.success) {
       navigate('/dashboard')
     } else {
-      setError('Please enter both email and password')
+      setError(result.error || 'Login failed')
     }
+
+    setIsLoading(false)
   }
 
   return (
@@ -44,31 +49,19 @@ export default function Login() {
               />
             </div>
 
-            <div className="meta-form-group">
-              <label className="meta-form-label">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="meta-input"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-
             {error && (
               <div className="bg-red-100 border border-red-300 text-red-800 px-sp-4 py-sp-3 rounded-md text-14">
                 {error}
               </div>
             )}
 
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
           <p className="meta-body text-center mt-sp-4">
-            Enter any email and password to continue
+            Enter your email address from the approval request
           </p>
         </div>
       </Card>

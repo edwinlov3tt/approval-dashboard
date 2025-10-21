@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react'
+import { api } from './api'
 
 const AuthContext = createContext(null)
 
@@ -10,24 +11,41 @@ export function AuthProvider({ children }) {
     JSON.parse(localStorage.getItem('user') || 'null')
   )
 
-  const login = (email, password) => {
-    // Simple authentication - just check if email and password are provided
-    if (email && password) {
-      const userData = {
-        email,
-        name: 'John Smith',
-        advertiser_id: 1,
+  const login = async (email) => {
+    try {
+      // Call API to validate email against approval_participants table
+      const response = await api.auth.login(email)
+
+      if (response.user) {
+        const userData = {
+          id: response.user.id,
+          email: response.user.email,
+          name: response.user.name,
+          advertiserId: response.user.advertiserId,
+          companyName: response.user.companyName,
+        }
+
+        setIsAuthenticated(true)
+        setUser(userData)
+        localStorage.setItem('isAuthenticated', 'true')
+        localStorage.setItem('user', JSON.stringify(userData))
+        return { success: true }
       }
-      setIsAuthenticated(true)
-      setUser(userData)
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('user', JSON.stringify(userData))
-      return true
+
+      return { success: false, error: 'Email not found' }
+    } catch (error) {
+      console.error('Login error:', error)
+      return { success: false, error: error.message || 'Login failed' }
     }
-    return false
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.auth.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+
     setIsAuthenticated(false)
     setUser(null)
     localStorage.removeItem('isAuthenticated')

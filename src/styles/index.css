@@ -1,131 +1,261 @@
+/* Import CSS variables for consistent design tokens */
+@import './variables.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-canvas text-text-primary;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
-  /* Meta Button Styles */
+  /* Meta Button Styles - Using CSS variables from variables.css */
   .meta-button {
-    @apply px-sp-4 py-sp-2 bg-brand text-white rounded-md font-medium text-14 transition-all hover:bg-brand-hover cursor-pointer border-none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--sp-4);
+    height: 40px;
+    background-color: var(--brand);
+    color: white;
+    border-radius: var(--r-md);
+    font-size: var(--fs-14);
+    line-height: var(--lh-20);
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: background-color 200ms;
+  }
+
+  .meta-button:hover {
+    background-color: var(--brand-hover);
   }
 
   .meta-button-secondary {
-    @apply px-sp-4 py-sp-2 bg-canvas text-text-primary rounded-md font-medium text-14 transition-all hover:bg-divider cursor-pointer border border-border;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--sp-4);
+    height: 40px;
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: var(--fs-14);
+    line-height: var(--lh-20);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 200ms;
+  }
+
+  .meta-button-secondary:hover {
+    background-color: var(--hover-bg);
   }
 
   .meta-button-small {
-    @apply px-sp-3 py-sp-2 text-12;
+    padding: 0 var(--sp-3);
+    height: 32px;
+    font-size: var(--fs-12);
+    line-height: var(--lh-18);
   }
 
   /* Meta Input Styles */
   .meta-input {
-    @apply w-full px-sp-3 py-sp-3 border border-border rounded-md text-14 transition-colors focus:outline-none focus:border-brand;
+    width: 100%;
+    padding: var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: var(--fs-14);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    transition: border-color 200ms;
+  }
+
+  .meta-input:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
+
+  .meta-input::placeholder {
+    color: var(--text-muted);
   }
 
   .meta-textarea {
-    @apply meta-input resize-y min-h-[80px];
+    width: 100%;
+    padding: var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: var(--fs-14);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 200ms;
+  }
+
+  .meta-textarea:focus {
+    outline: none;
+    border-color: var(--brand);
   }
 
   /* Meta Card Styles */
   .meta-card {
-    @apply bg-surface rounded-card border border-border shadow-sh-1;
+    background-color: var(--bg-surface);
+    border-radius: var(--r-card);
+    border: 1px solid var(--border);
+    box-shadow: var(--sh-1);
   }
 
   .meta-card-padding {
-    @apply p-sp-5;
+    padding: var(--sp-5);
   }
 
   .meta-card-header {
-    @apply px-sp-5 py-sp-4 border-b border-divider;
+    padding: var(--sp-4) var(--sp-5);
+    border-bottom: 1px solid var(--divider);
   }
 
   /* Meta Typography */
   .meta-page-title {
-    @apply text-24 font-semibold mb-sp-4;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: var(--sp-4);
   }
 
   .meta-section-title {
-    @apply text-16 font-semibold mb-sp-4;
+    font-size: var(--fs-16);
+    line-height: var(--lh-22);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-4);
   }
 
   .meta-body {
-    @apply text-14 text-text-secondary;
+    font-size: var(--fs-14);
+    line-height: var(--lh-20);
+    color: var(--text-secondary);
   }
 
   .meta-label {
-    @apply text-12 text-text-secondary uppercase tracking-wide font-semibold;
+    font-size: var(--fs-12);
+    line-height: var(--lh-18);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
   }
 
   /* Status Badges */
   .meta-chip {
-    @apply inline-flex items-center gap-1 px-sp-2 py-0.5 rounded-pill text-11 font-medium border;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px var(--sp-2);
+    border-radius: var(--r-pill);
+    font-size: var(--fs-11);
+    line-height: var(--lh-14);
+    font-weight: 500;
+    border: 1px solid;
   }
 
   .meta-chip-waiting {
-    @apply bg-yellow-100 text-yellow-800 border-yellow-300;
+    background-color: #FEF3C7;
+    color: #92400E;
+    border-color: #FCD34D;
   }
 
   .meta-chip-approved {
-    @apply bg-green-100 text-green-800 border-green-300;
+    background-color: #D1FAE5;
+    color: #065F46;
+    border-color: #6EE7B7;
   }
 
   .meta-chip-denied {
-    @apply bg-red-100 text-red-800 border-red-300;
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border-color: #FCA5A5;
   }
 
   .meta-chip-in-progress {
-    @apply bg-blue-100 text-blue-800 border-blue-300;
+    background-color: #DBEAFE;
+    color: #1E40AF;
+    border-color: #93C5FD;
   }
 
   /* Table Styles */
   .meta-table {
-    @apply w-full border-collapse text-14;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-14);
   }
 
   .meta-table th {
-    @apply text-left px-sp-4 py-sp-3 border-b-2 border-divider font-semibold text-text-secondary text-12 uppercase tracking-wide;
+    text-align: left;
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 2px solid var(--divider);
+    font-size: var(--fs-12);
+    line-height: var(--lh-18);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .meta-table td {
-    @apply px-sp-4 py-sp-3 border-b border-divider align-middle;
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--divider);
+    vertical-align: middle;
   }
 
   .meta-table tr:hover {
-    @apply bg-canvas;
+    background-color: var(--bg-canvas);
   }
 
   /* Progress Bar */
   .meta-progress {
-    @apply w-full h-2 bg-canvas rounded-pill overflow-hidden my-sp-2;
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-canvas);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+    margin: var(--sp-2) 0;
   }
 
   .meta-progress-bar {
-    @apply h-full bg-success transition-all duration-300;
+    height: 100%;
+    background-color: var(--success);
+    transition: width 300ms;
   }
 
   /* Form Group */
   .meta-form-group {
-    @apply mb-sp-4;
+    margin-bottom: var(--sp-4);
   }
 
   .meta-form-label {
-    @apply block text-14 font-medium mb-sp-2;
+    display: block;
+    font-size: var(--fs-14);
+    font-weight: 500;
+    margin-bottom: var(--sp-2);
+    color: var(--text-primary);
   }
 }
 
 @layer utilities {
   /* Custom spacing for full-width layouts */
   .content-padding {
-    @apply px-sp-6;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
   }
 
   .table-container {
-    @apply px-sp-6;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
   }
 }
