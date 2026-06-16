@@ -39,6 +39,25 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // DEV-ONLY: bypass the DB-backed login so the mock-data pages are viewable
+  // without a database. Gated on import.meta.env.DEV, so the only call site (the
+  // login screen) is dead code in production builds; the inner guard is
+  // defense-in-depth in case it is ever invoked from a prod bundle.
+  const devLogin = () => {
+    if (!import.meta.env.DEV) return
+    const userData = {
+      id: 0,
+      email: 'demo@example.com',
+      name: 'Demo User',
+      advertiserId: 1,
+      companyName: 'Demo Company',
+    }
+    setIsAuthenticated(true)
+    setUser(userData)
+    localStorage.setItem('isAuthenticated', 'true')
+    localStorage.setItem('user', JSON.stringify(userData))
+  }
+
   const logout = async () => {
     try {
       await api.auth.logout()
@@ -53,7 +72,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, devLogin, logout }}>
       {children}
     </AuthContext.Provider>
   )

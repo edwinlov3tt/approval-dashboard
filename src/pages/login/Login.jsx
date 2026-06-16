@@ -8,7 +8,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, devLogin } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -63,6 +63,25 @@ export default function Login() {
           <p className="meta-body text-center mt-sp-4">
             Enter your email address from the approval request
           </p>
+
+          {import.meta.env.DEV && (
+            <div className="mt-sp-4 pt-sp-4 border-t border-border">
+              <p className="meta-body text-center mb-sp-2">
+                Development mode — no database required
+              </p>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() => {
+                  devLogin()
+                  navigate('/campaigns')
+                }}
+              >
+                Continue as demo user
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
     </div>
