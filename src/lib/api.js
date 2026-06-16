@@ -45,6 +45,21 @@ async function apiRequest(endpoint, options = {}) {
 
     return data
   } catch (error) {
+    // DEV-ONLY: when no backend/database is available, fall back to demo fixtures
+    // so API-backed views (e.g. the Dashboard) are viewable offline. Gated on
+    // import.meta.env.DEV and lazily imported, so this branch and the fixtures
+    // module are stripped from production builds. Live responses always win — this
+    // runs only after a real request fails.
+    if (import.meta.env.DEV) {
+      const { resolveDevFixture } = await import('./devFixtures')
+      const method = options.method || 'GET'
+      const fixture = resolveDevFixture(endpoint, method)
+      if (fixture !== undefined) {
+        console.warn(`[dev fixtures] serving demo data for ${method} ${endpoint} (backend unavailable)`)
+        return fixture
+      }
+    }
+
     if (error instanceof APIError) {
       throw error
     }
