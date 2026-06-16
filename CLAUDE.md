@@ -4,338 +4,146 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Client Approval Dashboard** - a standalone Next.js application designed to provide advertisers/clients with a dedicated portal for managing campaign approvals. This application is separate from but shares a database with the Creative Spec App (creative-spec.vercel.app).
+**Client Approval Dashboard** — a web app that gives advertisers/clients a portal to manage
+campaigns, set approvers, view ads, and approve/deny/revise ad content. It shares a
+PostgreSQL database with the Creative Spec App (creative-spec.vercel.app): Creative Spec
+creates ads, this dashboard consumes and manages their approval.
 
-**Key Purpose**: Allow clients to manage campaigns, set approvers, view ads, and approve/deny/revise ad content through a dedicated interface.
-
-## Current Status
-
-This repository is in the **planning phase**. The `context/` directory contains:
-- `Approval_Dashboard_Plan.md` - Comprehensive technical specification (1,579 lines)
-- `prototype.html` - Functional HTML/CSS/JS prototype demonstrating the UI/UX
-
-**No implementation exists yet.** When beginning development, follow the 10-week implementation roadmap outlined in the specification.
+This is an implemented, working app — not a plan. (Earlier revisions of this file described a
+Next.js app in a "planning phase"; that was never built. The real stack is below.)
 
 ## Architecture
 
-### System Design
-- **Frontend**: Next.js 14+ (App Router), React 18+, TailwindCSS
-- **Backend**: Next.js API Routes or tRPC
-- **Database**: Shared PostgreSQL database with Creative Spec App
-- **Auth**: NextAuth.js (OAuth + Email magic links)
-- **Deployment**: Vercel (domain: approve.your-domain.com)
+The app is two processes that run together in development:
 
-### Database Integration
-This app shares the PostgreSQL database with the Creative Spec App but adds new tables:
-- `campaigns` - Campaign metadata and status tracking
-- `campaign_ads` - Join table linking campaigns to ads
-- `campaign_approvers` - Approver management per campaign
-- `user_profiles` - Enhanced user profiles with vacation mode
+1. **Frontend** — a Vite + React 18 single-page app (`src/`), routed with React Router v6.
+   It never touches the database directly; it calls the backend over HTTP via the client in
+   `src/lib/api.js` (base URL from `VITE_API_URL`, default `http://localhost:3001`).
+2. **Backend** — an Express 5 JSON API (`api/`), run with `tsx` (no build step). It owns all
+   database access through the shared DB library and returns JSON to the frontend.
 
-**Important**: The `ads`, `advertisers`, and `approval_requests` tables are shared with the Creative Spec App. Do not modify their schemas without coordination.
+Data flow: `React (src/) → src/lib/api.js → Express (api/) → src/lib/shared-db → PostgreSQL`.
 
-### Key Architectural Principles
-1. **Data flows one direction**: Creative Spec App creates ads → Approval Dashboard consumes/manages them
-2. **Campaign status auto-updates**: Database triggers update campaign status based on ad approval states
-3. **API integration**: Approval Dashboard calls Creative Spec API endpoints for approval actions
-4. **Separation of concerns**: Two independent apps, single shared database
+### Tech stack (actual)
+- **Frontend**: Vite 8, React 18, React Router 6, TailwindCSS 3 + plain CSS custom properties.
+- **Backend**: Express 5 on Node, executed by `tsx`. No ORM — raw parameterized SQL.
+- **Database**: PostgreSQL via `pg` (node-postgres), pooled. Shared with Creative Spec App.
+- **Auth**: lightweight email-based login (`api/routes/auth.ts` + `src/lib/auth.jsx` Context).
+  This is dev-grade, not a hardened auth system.
+- **Language**: mixed. App UI is mostly `.jsx`; the API and shared DB layer are `.ts`. New
+  backend / shared-db code should be TypeScript; see `tsconfig.json` (it only type-checks
+  `api/**` and `src/lib/shared-db/**`).
+- **Package manager**: pnpm (see `packageManager` in `package.json` and `pnpm-workspace.yaml`).
 
-## Design System
+### Repository layout
+```
+api/                     Express API server
+  index.ts               App entry: CORS, JSON, route mounting, /health, listen
+  routes/                auth, campaigns, ads, approvers, profile, dashboard
+src/                     Vite React SPA
+  main.jsx, App.jsx      Entry + React Router routes (all protected except /login)
+  pages/                 login, dashboard, ads, campaigns, calendar, profile, business-profile
+  components/layout/     Layout, Sidebar, TopNav
+  components/ui/          Button, Card, Modal, StatusBadge, ProgressBar, etc.
+  components/preview/    Facebook/Instagram ad previews (.tsx)
+  lib/api.js             Frontend HTTP client (the only way the UI reaches the backend)
+  lib/auth.jsx           Auth Context (login state, ProtectedRoute)
+  lib/mockData.js        Mock data still used by some pages not yet wired to the API
+  lib/shared-db/         Shared PostgreSQL library (copied between apps — see below)
+  styles/                variables.css (Meta design tokens), index.css, globals.css
+scripts/                 DB utility scripts (check-db, check-users, create-test-user, show-schema)
+context/                 Original spec + HTML prototype (historical reference)
+docs/                    Database setup + integration guides
+components/              STAGING ONLY: Creative Spec TSX components copied in for future reuse.
+                         NOT imported by the running app. The live components are in src/components/.
+```
 
-The application uses a **Meta-inspired design system** matching the Creative Spec App:
+### Shared database library (`src/lib/shared-db/`)
+This folder is copied verbatim between the Creative Spec App and this app — it is the single
+source of DB access. Treat it as shared code: changes here are meant to be portable to both apps.
+- `db.ts` — `getPool()`, `query()`, `queryOne()`, `transaction()`, `closePool()` over a `pg.Pool`
+  built from `DATABASE_URL`. All queries use parameterized SQL.
+- `db-campaigns.ts`, `db-advertisers.ts`, `db-approval.ts`, `types.ts` — domain queries and types.
 
-### Design Tokens
+**Shared tables** (`ads`, `advertisers`, `approval_requests`) are owned jointly with the Creative
+Spec App. Do not change their schemas without coordinating. App-specific tables (`campaigns`,
+`campaign_ads`, `campaign_approvers`) are managed here. `ads.approval_status` values seen in
+queries: `approved`, `denied`, `waiting`. The authoritative schema lives in
+`docs/DATABASE_SCHEMA_SETUP.md`; inspect a live DB with `node scripts/show-schema.js`.
+
+## Development
+
+```bash
+pnpm install        # install deps (pnpm; package-lock.json is intentionally gone)
+pnpm dev            # runs API (tsx watch) + Vite together via concurrently
+pnpm dev:api        # API only, http://localhost:3001
+pnpm dev:app        # Vite only, http://localhost:5173
+pnpm build          # production build of the FRONTEND only (vite build)
+pnpm preview        # preview the built frontend
+```
+
+There is no build step or test suite for the API yet, and no automated tests in the repo.
+`pnpm build` covers the frontend only; the API is run directly via `tsx`.
+
+### Environment variables (`.env`, see `.env.example`)
+```bash
+DATABASE_URL=postgresql://user:password@host:5432/database   # shared Postgres
+VITE_API_URL=http://localhost:3001                           # frontend → API base URL
+API_PORT=3001                                                # API listen port
+```
+The API boots without `DATABASE_URL` (logs "Database: Not configured"); routes that hit the DB
+will fail until it is set.
+
+### pnpm note
+pnpm blocks dependency install scripts by default as a supply-chain guard. `esbuild` is
+explicitly allowed to run its install script in `pnpm-workspace.yaml` (it needs to set up its
+native binary). Add new entries there only for build tools you have vetted.
+
+## API surface
+
+All routes are mounted directly under `/api/*` by `api/index.ts`. The frontend calls them
+through `src/lib/api.js` — keep that client and the routes in sync.
+
+- **Auth**: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me?email=`
+- **Campaigns**: `GET /api/campaigns?advertiserId=`, `GET /api/campaigns/:id`,
+  `GET /api/campaigns/stats`, `GET /api/campaigns/recent`, `POST /api/campaigns`,
+  `PATCH /api/campaigns/:id`, `DELETE /api/campaigns/:id`
+- **Ads**: `GET /api/ads?advertiserId=` (+ filters), `GET /api/ads/:id`, `GET /api/ads/stats/summary`
+- **Approvers**: `GET /api/approvers?advertiserId=`, `POST /api/approvers`, `DELETE /api/approvers/:id`
+- **Profile**: `GET /api/profile/company`, `GET /api/profile/approvers`, `PATCH /api/profile/company/:id`
+- **Dashboard**: `GET /api/dashboard/stats`, `GET /api/dashboard/recent-activity`
+- **Health**: `GET /health`
+
+Endpoints scope data by `advertiserId`. There is no enforced authorization layer yet — adding
+real ownership checks (a user may only access their advertiser's data) is an open hardening task.
+
+## Design system
+
+Meta-inspired tokens defined in `src/styles/variables.css` and consumed via CSS custom
+properties (and surfaced to Tailwind in `tailwind.config.js`). Core tokens:
+
 ```css
---brand: #1877F2           /* Meta Blue */
---bg-canvas: #F0F2F5       /* Background gray */
---bg-surface: #FFFFFF      /* Card background */
---text-primary: #1C1E21    /* Dark text */
---success: #4CAF50         /* Approval green */
---danger: #E41E3F          /* Denial red */
---warning: #FFC107         /* Pending yellow */
+--brand: #1877F2;          /* Meta blue */
+--bg-canvas: #F0F2F5;      /* page background */
+--bg-surface: #FFFFFF;     /* card background */
+--text-primary: #1C1E21;
+--success: #4CAF50;        /* approved */
+--danger: #E41E3F;         /* denied */
+--warning: #FFC107;        /* waiting */
 ```
+Spacing scale `--sp-2: 8px` … `--sp-6: 24px`; radii `--r-card: 12px`, `--r-md: 8px`,
+`--r-pill: 24px`. Status badges use icons plus color (approved / denied / waiting / in-progress).
+See `INTEGRATION_SUMMARY.md` for how the Creative Spec design system was brought in.
 
-### Component Patterns
-- Use existing Meta-style components from Creative Spec App when possible
-- Status badges with icons: ✓ (approved), ✗ (denied), ⏳ (waiting), ◐ (in progress)
-- Card-based layouts with consistent spacing (--sp-4: 16px, --sp-6: 24px)
-- Modal overlays for creation/editing flows
+## Known gaps / gotchas
 
-**Reference**: See `context/prototype.html` for visual design implementation details.
-
-## Database Schema
-
-### New Tables to Implement
-
-```sql
--- campaigns table
-CREATE TABLE campaigns (
-  id SERIAL PRIMARY KEY,
-  advertiser_id INTEGER REFERENCES advertisers(id),
-  name VARCHAR(255) NOT NULL,
-  status VARCHAR(50) DEFAULT 'waiting',
-  start_date DATE,
-  end_date DATE,
-  total_ads INTEGER DEFAULT 0,
-  approved_ads INTEGER DEFAULT 0,
-  denied_ads INTEGER DEFAULT 0,
-  pending_ads INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- campaign_ads join table
-CREATE TABLE campaign_ads (
-  id SERIAL PRIMARY KEY,
-  campaign_id INTEGER REFERENCES campaigns(id) ON DELETE CASCADE,
-  ad_id INTEGER REFERENCES ads(id) ON DELETE CASCADE,
-  display_order INTEGER DEFAULT 0,
-  UNIQUE(campaign_id, ad_id)
-);
-
--- campaign_approvers
-CREATE TABLE campaign_approvers (
-  id SERIAL PRIMARY KEY,
-  campaign_id INTEGER REFERENCES campaigns(id) ON DELETE CASCADE,
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  is_final_decision_maker BOOLEAN DEFAULT FALSE,
-  status VARCHAR(50) DEFAULT 'active',
-  vacation_start_date DATE,
-  vacation_end_date DATE,
-  UNIQUE(campaign_id, email)
-);
-
--- user_profiles (enhanced stakeholders)
-CREATE TABLE user_profiles (
-  id SERIAL PRIMARY KEY,
-  advertiser_id INTEGER REFERENCES advertisers(id),
-  email VARCHAR(255) NOT NULL UNIQUE,
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
-  password_hash TEXT,
-  is_on_vacation BOOLEAN DEFAULT FALSE,
-  vacation_start_date DATE,
-  vacation_end_date DATE
-);
+- **`/components` (repo root) is staging, not live code** — Creative Spec TSX components parked
+  for future reuse. The app renders `src/components/`. Don't assume root `/components` is wired in.
+- **Some pages still read `src/lib/mockData.js`** rather than the API. When wiring a page to the
+  backend, replace the mock import with `src/lib/api.js` calls.
+- **No tests and no API build/typecheck in CI.** `tsconfig.json` only type-checks `api/**` and
+  `src/lib/shared-db/**`; the `.jsx` UI is not type-checked.
+- **Auth and authorization are minimal** (dev-grade login, no per-advertiser access enforcement).
+- Historical context (the original spec and prototype) lives in `context/`; treat it as
+  background, not a description of the current code.
 ```
-
-**Critical**: Implement the `update_campaign_status()` trigger function to automatically update campaign status when ad approvals change (see lines 266-329 in specification).
-
-## API Endpoints
-
-### New Endpoints to Create
-
-**Campaign Management**:
-- `GET /api/dashboard/campaigns?advertiserId={id}` - List campaigns
-- `POST /api/dashboard/campaigns` - Create campaign
-- `GET /api/dashboard/campaigns/[id]` - Get campaign details
-- `PATCH /api/dashboard/campaigns/[id]` - Update campaign
-- `DELETE /api/dashboard/campaigns/[id]` - Delete campaign
-
-**Approver Management**:
-- `GET /api/dashboard/campaigns/[id]/approvers` - List approvers
-- `POST /api/dashboard/campaigns/[id]/approvers` - Add approver
-- `PATCH /api/dashboard/approvers/[id]` - Update approver
-- `POST /api/dashboard/approvers/[id]/vacation` - Set vacation mode
-
-**Calendar & Analytics**:
-- `GET /api/dashboard/calendar?start={date}&end={date}` - Calendar events
-- `GET /api/dashboard/stats?advertiserId={id}` - Dashboard metrics
-
-### Existing Endpoints to Integrate
-Reuse these from Creative Spec App:
-- `GET /api/approval/ad/[adId]` - Get ad approval details
-- `POST /api/approval/submit` - Submit approval decision
-- `POST /api/approval/revision` - Submit revision request
-
-## Key Features to Implement
-
-### 1. Campaign Management (Phase 2)
-- Table view with filters (all, waiting, approved, denied, in_progress)
-- Kanban board view with drag-and-drop (using @dnd-kit/core)
-- Progress bars showing X/Y ads approved
-- CRUD operations for campaigns
-
-### 2. Approval Workflow (Phase 3)
-- Reuse approval view layout from Creative Spec App
-- Display ad creative with approve/deny/revise actions
-- Activity timeline showing approval history
-- Real-time presence indicators (who's viewing)
-
-### 3. Approver Management (Phase 4)
-- Add/edit/remove approvers per campaign
-- "Final Decision Maker" designation
-- Vacation mode with delegation
-- Automatic routing to delegates when approver is on vacation
-
-### 4. Calendar View (Phase 5)
-- FullCalendar or React Big Calendar integration
-- Display campaigns and ads on timeline
-- Color-coded by status (green=approved, yellow=pending, red=denied)
-- Click to view campaign/ad details
-
-### 5. Profile Management (Phase 6)
-- User profile settings (name, phone, photo)
-- Vacation mode toggle with date range
-- Password management
-- Email verification
-
-## Implementation Roadmap
-
-Follow the 10-week phased approach in the specification:
-1. **Phase 1 (Weeks 1-2)**: Foundation - Project setup, auth, database migrations
-2. **Phase 2 (Weeks 3-4)**: Campaign Management - CRUD, table view, filters
-3. **Phase 3 (Weeks 5-6)**: Approval Integration - Ad review, approve/deny actions
-4. **Phase 4 (Week 7)**: Approver Management - Add approvers, vacation mode
-5. **Phase 5 (Week 8)**: Kanban & Calendar - Alternative views
-6. **Phase 6 (Week 9)**: Profile & Settings - User management
-7. **Phase 7 (Week 10)**: Polish & Launch - Error handling, optimization, deployment
-
-## Technology Stack
-
-### Core Dependencies (to install)
-```json
-{
-  "dependencies": {
-    "next": "^14.0.0",
-    "react": "^18.0.0",
-    "next-auth": "^4.0.0",
-    "@tanstack/react-query": "^5.0.0",
-    "@tanstack/react-table": "^8.0.0",
-    "@dnd-kit/core": "^6.0.0",
-    "zustand": "^4.0.0",
-    "react-hot-toast": "^2.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "tailwindcss": "^3.0.0",
-    "@playwright/test": "^1.40.0"
-  }
-}
-```
-
-### State Management
-- **TanStack Query** for server state (campaigns, approvals, etc.)
-- **Zustand** for client state (UI state, filters, etc.)
-- Implement optimistic updates for approval actions
-
-### Database Access
-Choose **Drizzle ORM** or raw SQL with prepared statements. The specification does not prescribe a specific ORM, but Drizzle is recommended for type safety.
-
-## Environment Variables
-
-```bash
-# Database (shared with Creative Spec)
-DATABASE_URL=postgresql://user:password@host:5432/database
-
-# NextAuth
-NEXTAUTH_URL=https://approve.your-domain.com
-NEXTAUTH_SECRET=your-secret-key
-
-# Email (Resend)
-RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=approvals@your-domain.com
-
-# Creative Spec API Integration
-CREATIVE_SPEC_API_URL=https://creative-spec.vercel.app
-CREATIVE_SPEC_API_KEY=optional-api-key-for-server-to-server
-
-# Feature Flags
-ENABLE_KANBAN_VIEW=true
-ENABLE_CALENDAR_VIEW=true
-ENABLE_VACATION_MODE=true
-```
-
-## Security Considerations
-
-### Authentication & Authorization
-- All dashboard routes require authentication (use NextAuth.js middleware)
-- Verify advertiser ownership on all API endpoints
-- Users can only access campaigns for their advertiser_id
-- Validate all inputs with Zod schemas
-
-### Input Validation Example
-```typescript
-import { z } from 'zod'
-
-const createCampaignSchema = z.object({
-  name: z.string().min(1).max(255),
-  advertiser_id: z.number().int().positive(),
-  start_date: z.string().datetime().optional(),
-  end_date: z.string().datetime().optional()
-})
-```
-
-## Performance Optimization
-
-### Caching Strategy
-- Use TanStack Query with 5-minute stale time for campaigns list
-- Implement optimistic updates for approval actions
-- Add database indexes on frequently queried columns:
-  ```sql
-  CREATE INDEX idx_campaigns_advertiser_status ON campaigns(advertiser_id, status);
-  CREATE INDEX idx_campaign_ads_campaign ON campaign_ads(campaign_id);
-  ```
-
-### Database Optimization
-- Campaign status auto-updates via triggers (not application code)
-- Consider materialized views for dashboard stats if dataset grows large
-- Use `SELECT` field limiting to reduce data transfer
-
-## Testing
-
-### Test Coverage Requirements
-- Unit tests for API endpoints (campaign CRUD, approver management)
-- Integration tests for approval workflow
-- E2E tests with Playwright for critical paths:
-  - Create campaign → Add ads → Approve/deny → Verify status update
-  - Vacation mode delegation workflow
-
-### Test Command Structure (to implement)
-```bash
-npm run test           # Run all tests
-npm run test:unit      # Unit tests only
-npm run test:e2e       # E2E tests with Playwright
-npm run test:coverage  # Coverage report
-```
-
-## Integration with Creative Spec App
-
-### API Communication Pattern
-```typescript
-// lib/creativeSpecApi.ts
-const API_BASE = process.env.CREATIVE_SPEC_API_URL
-
-export async function getApprovalDetails(adId: number, email: string) {
-  const response = await fetch(
-    `${API_BASE}/api/approval/ad/${adId}?email=${email}`
-  )
-  return response.json()
-}
-
-export async function submitApproval(data: ApprovalSubmission) {
-  const response = await fetch(`${API_BASE}/api/approval/submit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  return response.json()
-}
-```
-
-### Shared Data Contracts
-- `ads` table columns: id, short_id, ad_copy (JSONB), approval_status
-- `approval_requests` table columns: id, ad_id, status, created_at
-- Status values: 'pending', 'approved', 'rejected', 'revision_requested'
-
-**Do not modify shared table schemas without coordinating with Creative Spec App team.**
-
-## Reference Documentation
-
-- **Full Specification**: `context/Approval_Dashboard_Plan.md` (1,579 lines) - Comprehensive technical details, API contracts, database schema, UI mockups
-- **UI Prototype**: `context/prototype.html` - Functional HTML prototype demonstrating design system and interactions
-- **Database Schema**: Lines 122-262 in specification
-- **API Endpoints**: Lines 332-533 in specification
-- **Design Tokens**: Lines 810-856 in specification
-- **Implementation Phases**: Lines 1157-1308 in specification
