@@ -1,0 +1,5 @@
+# pnpm blocks dependency install scripts by default as a supply-chain guard.
+# esbuild is a vetted build tool that needs its install script to set up its
+# native binary, so we explicitly allow it here.
+allowBuilds:
+  esbuild: true

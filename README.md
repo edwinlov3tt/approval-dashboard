@@ -21,7 +21,7 @@ A standalone web application for managing campaign approvals, built with Vite + 
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+ and pnpm
 
 ### Installation
 
@@ -33,12 +33,12 @@ cd approval-dashboard
 
 2. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 3. Start the development server:
 ```bash
-npm run dev
+pnpm dev
 ```
 
 4. Open your browser to `http://localhost:5173`
@@ -69,9 +69,9 @@ Use any email and password to log in (simple authentication for development).
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm preview` - Preview production build
 
 ## Design System
 
